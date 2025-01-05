@@ -60,8 +60,8 @@ func (c *Core) Unlink(fileName string) {
 	}
 	descriptor := c.fs.GetDescriptor(fileName)
 	c.fs.Unlink(fileName)
-	if (descriptor.Nlink == 0 && !descriptor.IsOpen) {
-		descriptor = nil
+	if (descriptor.Nlink == 0 && descriptor.NOpen == 0) {
+		c.fs.NullifyDescriptor(fileName)
 	}
 }
 
@@ -77,7 +77,7 @@ func (c *Core) Open(fileName string) *fs.OpenFileDescriptor{
 	}
 	fmt.Println("Open file", fileName)
 	descriptor := c.fs.GetDescriptor(fileName)
-	descriptor.IsOpen = true
+	descriptor.NOpen++
 	openFileDescriptor := &fs.OpenFileDescriptor{Desc: descriptor, Offset: 0, Id: index}
 	c.openFileDescriptors[index] = openFileDescriptor
 	openFileDescriptor.Desc.Data = make(map[int]*fs.Block)
@@ -103,8 +103,8 @@ func (c *Core) Close(fd *fs.OpenFileDescriptor) *fs.OpenFileDescriptor {
 	}
 	fmt.Println("Closing file")
 	c.openFileDescriptors[fd.Id] = nil
-	fd.Desc.IsOpen = false
-	if(fd.Desc.Nlink == 0 && !fd.Desc.IsOpen) {
+	fd.Desc.NOpen--
+	if(fd.Desc.Nlink == 0 && fd.Desc.NOpen == 0) {
 		fd.Desc = nil
 	}
 	return nil

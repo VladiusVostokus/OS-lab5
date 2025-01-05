@@ -29,7 +29,7 @@ func main() {
 
 	fmt.Println("\n============================Test open/close================================")
 	fd := core.Open("file2.txt")
-	core.Close(fd)
+	fd = core.Close(fd)
 
 	fmt.Println("\n============================Test truncate==================================")
 	core.Truncate("file2.txt",-10)
