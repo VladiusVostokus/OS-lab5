@@ -97,4 +97,7 @@ func main() {
 	core.Read(fdd2, 20)
 	fdd2 = core.Close(fdd2)
 	//core.Read(fdd2, 23) Should give and error
+	fmt.Println("\n==============================Test symlinks================================")
+	core.Symlink("symlink0.txt","contentBiggerThanBlockSize.txt")
+	core.Symlink("symlink.txt","somefile.txt")
 }

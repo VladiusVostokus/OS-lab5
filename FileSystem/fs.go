@@ -60,6 +60,15 @@ func (fs *FileSystem) Unlink(fileName string) {
 	delete(fs.rootDir.Data, fileName)
 }
 
+func (fs *FileSystem) Symlink(linkname, content string) {
+	id := int(time.Now().UnixNano())
+	descriptor := &symlinkDescriptor{}
+	descriptor.Init(id)
+	descriptor.Data = content
+	fs.rootDir.Data[linkname] = descriptor
+	fmt.Println("Create symlink:", linkname," to file",content,"| Descriptor id:", descriptor.Id)
+}
+
 func (fs *FileSystem) Find(fileName string) bool {
 	return fs.rootDir.Data[fileName] != nil
 }

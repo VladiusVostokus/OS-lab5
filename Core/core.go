@@ -217,3 +217,11 @@ func (c *Core) Seek(fd *fs.OpenFileDescriptor, offset int) {
 	}
 	fd.Offset = offset
 }
+
+func (c *Core) Symlink(linkname, content string) {
+	if (len(content) > 32) {
+		fmt.Println("Error: symlink content can not be bigger than block size", c.blockSize)
+		return
+	}
+	c.fs.Symlink(linkname, content)
+}
