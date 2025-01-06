@@ -1,7 +1,7 @@
 package filesystem
 
 type Descriptor interface {
-	Init(fileType string, id int)
+	Init(id int)
 }
 
 type fileDescriptor struct{
@@ -11,8 +11,34 @@ type fileDescriptor struct{
 	Nblock int
 }
 
-func (fd *fileDescriptor) Init (fileType string, id int) {
+func (fd *fileDescriptor) Init (id int) {
 	fd.FileType = "reg"
+	fd.Id = id
+	fd.Nlink = 1
+}
+
+type symlinkDescriptor struct {
+	FileType string
+	Nlink, NOpen, Size, Id int
+	Data string
+	Nblock int
+}
+
+func (fd *symlinkDescriptor) Init (id int) {
+	fd.FileType = "sym"
+	fd.Id = id
+	fd.Nlink = 1
+}
+
+type directoryDescriptor struct {
+	FileType string
+	Nlink, NOpen, Size, Id int
+	Data map[string]Descriptor
+	Nblock int
+}
+
+func (fd *directoryDescriptor) Init (id int) {
+	fd.FileType = "dir"
 	fd.Id = id
 	fd.Nlink = 1
 }

@@ -18,7 +18,7 @@ func (fs * FileSystem) Mkfs () {
 func (fs* FileSystem) Create (fileName string) {
 	id := int(time.Now().UnixNano())
 	descriptor := &fileDescriptor{}
-	descriptor.Init("reg", id)
+	descriptor.Init(id)
 
 	fs.directory[fileName] = descriptor
 	descriptor.Data = make(map[int]*Block)
