@@ -9,6 +9,7 @@ type Core struct {
 	fs *fs.FileSystem
 	openFileDescriptors []*fs.OpenFileDescriptor
 	blockSize int
+	Cwd **fs.DirectoryDescriptor
 }
 
 func (c *Core) Mkfs (descriptorsCount int) {
@@ -18,6 +19,7 @@ func (c *Core) Mkfs (descriptorsCount int) {
 	fmt.Println("Create core with", descriptorsCount, "possible open file descpriptors")
 	c.fs = &fs.FileSystem{}
 	c.fs.Mkfs()
+	c.Cwd = &c.fs.RootDir
 	fmt.Println("System is ready to work!")
 }
 
