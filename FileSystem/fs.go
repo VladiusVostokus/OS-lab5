@@ -69,6 +69,18 @@ func (fs *FileSystem) Symlink(linkname, content string) {
 	fmt.Println("Create symlink:", linkname, " to file", content, "| Descriptor id:", descriptor.Id)
 }
 
+func (fs *FileSystem) Mkdir(dir, prevDir string) {
+	id := int(time.Now().UnixNano())
+	descriptor := &DirectoryDescriptor{}
+	descriptor.Init(id)
+	descriptor.Data["."] = descriptor
+	if (prevDir == "/") {
+		descriptor.Data[".."] = fs.RootDir
+	}
+	fs.RootDir.Data[dir] = descriptor
+	fmt.Println("Create directory:", dir, "| Descriptor id:", descriptor.Id)
+}
+
 func (fs *FileSystem) Find(fileName string) bool {
 	return fs.RootDir.Data[fileName] != nil
 }

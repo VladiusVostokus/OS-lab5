@@ -100,4 +100,7 @@ func main() {
 	fmt.Println("\n==============================Test symlinks================================")
 	core.Symlink("symlink0.txt","contentBiggerThanBlockSize.txt")
 	core.Symlink("symlink.txt","somefile.txt")
+
+	fmt.Println("\n==============================Test directories=============================")
+	core.Mkdir("/a")
 }

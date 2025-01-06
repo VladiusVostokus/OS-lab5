@@ -3,6 +3,7 @@ package core
 import (
 	fs "OS_lab5/FileSystem"
 	"fmt"
+	"strings"
 )
 
 type Core struct {
@@ -226,4 +227,23 @@ func (c *Core) Symlink(linkname, content string) {
 		return
 	}
 	c.fs.Symlink(linkname, content)
+}
+
+func (c *Core) Mkdir(path string) {
+	dir, prevDir := c.lookup(path)
+	c.fs.Mkdir(dir, prevDir)
+}
+
+func (c *Core) lookup(pathname string) (string, string) {
+	pathComponents := strings.Split(pathname, "/")
+	pathComponents = pathComponents[1:]
+	countOfComponents := len(pathComponents)
+	lastComponentIdx := 0
+	prevDir := "/"
+	if (countOfComponents > 1) {
+		lastComponentIdx = len(pathComponents) - 1
+		prevDir = pathComponents[lastComponentIdx - 1]
+	}
+	dirName := pathComponents[lastComponentIdx]
+	return dirName, prevDir
 }
