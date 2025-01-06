@@ -103,4 +103,6 @@ func main() {
 
 	fmt.Println("\n==============================Test directories=============================")
 	core.Mkdir("/a")
+	core.Ls()
+	core.Stat("symlink.txt")
 }

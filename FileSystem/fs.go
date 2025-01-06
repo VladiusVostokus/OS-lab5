@@ -30,20 +30,38 @@ func (fs *FileSystem) Create(fileName string) {
 func (fs *FileSystem) Ls() {
 	fmt.Println("Hard links of currect directory:")
 	for f, d := range fs.RootDir.Data {
-		if d, isFile := d.(*fileDescriptor); isFile {
-			fmt.Println("Name:", f, "\t id:", d.Id)
+		switch desc := d.(type) {
+			case *fileDescriptor:
+				fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
+			case *DirectoryDescriptor:
+				fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
+			case *symlinkDescriptor:
+				fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
 		}
 	}
 }
 
 func (fs *FileSystem) Stat(fileName string) {
-	descriptor := fs.RootDir.Data[fileName].(*fileDescriptor)
-	fmt.Println("Type:", descriptor.FileType,
+	switch descriptor := fs.RootDir.Data[fileName].(type) {
+	case *fileDescriptor:
+		fmt.Println("Type:", descriptor.FileType,
 		"\tId:", descriptor.Id,
 		"\tHard links count:", descriptor.Nlink,
 		"\tSize:", descriptor.Size,
 		"\tBlocks:", descriptor.Nblock)
-
+	case *DirectoryDescriptor:
+		fmt.Println("Type:", descriptor.FileType,
+		"\tId:", descriptor.Id,
+		"\tHard links count:", descriptor.Nlink,
+		"\tSize:", descriptor.Size,
+		"\tBlocks:", descriptor.Nblock)
+	case *symlinkDescriptor:
+		fmt.Println("Type:", descriptor.FileType,
+		"\tId:", descriptor.Id,
+		"\tHard links count:", descriptor.Nlink,
+		"\tSize:", descriptor.Size,
+		"\tBlocks:", descriptor.Nblock)
+	}
 }
 
 func (fs *FileSystem) Link(linkWith, toLink string) {
