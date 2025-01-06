@@ -15,6 +15,7 @@ func (fd *fileDescriptor) Init (id int) {
 	fd.FileType = "reg"
 	fd.Id = id
 	fd.Nlink = 1
+	fd.Data = make(map[int]*Block)
 }
 
 type symlinkDescriptor struct {
@@ -41,4 +42,5 @@ func (fd *directoryDescriptor) Init (id int) {
 	fd.FileType = "dir"
 	fd.Id = id
 	fd.Nlink = 1
+	fd.Data = make(map[string]Descriptor)
 }

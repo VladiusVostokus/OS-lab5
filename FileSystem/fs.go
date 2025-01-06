@@ -13,7 +13,6 @@ func (fs * FileSystem) Mkfs () {
 	fmt.Println("Creation of file system...")
 	fs.rootDir = &directoryDescriptor{}
 	fs.rootDir.Init(0)
-	fs.rootDir.Data = make(map[string]Descriptor)
 	fs.rootDir.Data["."] = fs.rootDir
 	fs.rootDir.Data[".."] = fs.rootDir
 	fmt.Println("File system created")
@@ -25,7 +24,6 @@ func (fs* FileSystem) Create (fileName string) {
 	descriptor.Init(id)
 
 	fs.rootDir.Data[fileName] = descriptor
-	descriptor.Data = make(map[int]*Block)
 	fmt.Println("Create file:", fileName,"| Descriptor id:", descriptor.Id)
 }
 
