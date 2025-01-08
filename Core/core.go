@@ -61,7 +61,7 @@ func (c *Core) Unlink(fileName string) {
 		fmt.Println("Error: File",fileName,"to delete does not exist")
 		return
 	}
-	descriptor := c.fs.GetDescriptor(c.Cwd, fileName)
+	descriptor := c.fs.GetDescriptor(c.Cwd, fileName).(*fs.FileDescriptor)
 	c.fs.Unlink(fileName)
 	if (descriptor.Nlink == 0 && descriptor.NOpen == 0) {
 		c.fs.NullifyDescriptor(c.Cwd,fileName)
@@ -79,7 +79,7 @@ func (c *Core) Open(fileName string) *fs.OpenFileDescriptor{
 		return nil
 	}
 	fmt.Println("Open file", fileName)
-	descriptor := c.fs.GetDescriptor(c.Cwd, fileName)
+	descriptor := c.fs.GetDescriptor(c.Cwd, fileName).(*fs.FileDescriptor)
 	descriptor.NOpen++
 	openFileDescriptor := &fs.OpenFileDescriptor{Desc: descriptor, Offset: 0, Id: index}
 	c.openFileDescriptors[index] = openFileDescriptor
@@ -122,7 +122,7 @@ func (c *Core) Truncate(fileName string, size int) {
 		fmt.Println("Error: File",fileName,"to truncate does not exist")
 		return
 	}
-	descriptor := c.fs.GetDescriptor(c.Cwd, fileName)
+	descriptor := c.fs.GetDescriptor(c.Cwd, fileName).(*fs.FileDescriptor)
 	if (descriptor.Size > size) {
 		newBlockCount := size / c.blockSize
 		remainingBytes := size % c.blockSize
@@ -230,20 +230,24 @@ func (c *Core) Symlink(linkname, content string) {
 }
 
 func (c *Core) Mkdir(path string) {
-	dir, prevDir := c.lookup(path)
-	c.fs.Mkdir(dir, prevDir)
+	prevDir, dir, dirName := c.lookup(path)
+	c.fs.Mkdir(prevDir, dir, dirName)
 }
 
-func (c *Core) lookup(pathname string) (string, string) {
+func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDescriptor, string) {
+	var prevDir *fs.DirectoryDescriptor
+	var dir *fs.DirectoryDescriptor
+	if (pathname[0] == '/') {
+		prevDir = c.fs.RootDir
+		dir = c.fs.RootDir
+	} else {
+		prevDir = c.Cwd
+	}
 	pathComponents := strings.Split(pathname, "/")
 	pathComponents = pathComponents[1:]
 	countOfComponents := len(pathComponents)
 	lastComponentIdx := 0
-	prevDir := "/"
-	if (countOfComponents > 1) {
-		lastComponentIdx = len(pathComponents) - 1
-		prevDir = pathComponents[lastComponentIdx - 1]
-	}
+	lastComponentIdx = countOfComponents - 1
 	dirName := pathComponents[lastComponentIdx]
-	return dirName, prevDir
+	return prevDir, dir, dirName
 }
