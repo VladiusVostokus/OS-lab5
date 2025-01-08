@@ -20,7 +20,7 @@ func (fs *FileSystem) Mkfs() {
 
 func (fs *FileSystem) Create(fileName string) {
 	id := int(time.Now().UnixNano())
-	descriptor := &fileDescriptor{}
+	descriptor := &FileDescriptor{}
 	descriptor.Init(id)
 
 	fs.RootDir.Data[fileName] = descriptor
@@ -31,41 +31,41 @@ func (fs *FileSystem) Ls() {
 	fmt.Println("Hard links of currect directory:")
 	for f, d := range fs.RootDir.Data {
 		switch desc := d.(type) {
-			case *fileDescriptor:
-				fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
-			case *DirectoryDescriptor:
-				fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
-			case *symlinkDescriptor:
-				fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
+		case *FileDescriptor:
+			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
+		case *DirectoryDescriptor:
+			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
+		case *symlinkDescriptor:
+			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
 		}
 	}
 }
 
 func (fs *FileSystem) Stat(fileName string) {
 	switch descriptor := fs.RootDir.Data[fileName].(type) {
-	case *fileDescriptor:
+	case *FileDescriptor:
 		fmt.Println("Type:", descriptor.FileType,
-		"\tId:", descriptor.Id,
-		"\tHard links count:", descriptor.Nlink,
-		"\tSize:", descriptor.Size,
-		"\tBlocks:", descriptor.Nblock)
+			"\tId:", descriptor.Id,
+			"\tHard links count:", descriptor.Nlink,
+			"\tSize:", descriptor.Size,
+			"\tBlocks:", descriptor.Nblock)
 	case *DirectoryDescriptor:
 		fmt.Println("Type:", descriptor.FileType,
-		"\tId:", descriptor.Id,
-		"\tHard links count:", descriptor.Nlink,
-		"\tSize:", descriptor.Size,
-		"\tBlocks:", descriptor.Nblock)
+			"\tId:", descriptor.Id,
+			"\tHard links count:", descriptor.Nlink,
+			"\tSize:", descriptor.Size,
+			"\tBlocks:", descriptor.Nblock)
 	case *symlinkDescriptor:
 		fmt.Println("Type:", descriptor.FileType,
-		"\tId:", descriptor.Id,
-		"\tHard links count:", descriptor.Nlink,
-		"\tSize:", descriptor.Size,
-		"\tBlocks:", descriptor.Nblock)
+			"\tId:", descriptor.Id,
+			"\tHard links count:", descriptor.Nlink,
+			"\tSize:", descriptor.Size,
+			"\tBlocks:", descriptor.Nblock)
 	}
 }
 
 func (fs *FileSystem) Link(linkWith, toLink string) {
-	descriptor := fs.RootDir.Data[linkWith].(*fileDescriptor)
+	descriptor := fs.RootDir.Data[linkWith].(*FileDescriptor)
 	descriptor.Nlink++
 	fs.RootDir.Data[toLink] = descriptor
 	fmt.Println("Create hard link", toLink, "with", linkWith)
@@ -73,7 +73,7 @@ func (fs *FileSystem) Link(linkWith, toLink string) {
 
 func (fs *FileSystem) Unlink(fileName string) {
 	fmt.Println("Delete file:", fileName)
-	descriptor := fs.RootDir.Data[fileName].(*fileDescriptor)
+	descriptor := fs.RootDir.Data[fileName].(*FileDescriptor)
 	descriptor.Nlink--
 	delete(fs.RootDir.Data, fileName)
 }
@@ -92,21 +92,21 @@ func (fs *FileSystem) Mkdir(dir, prevDir string) {
 	descriptor := &DirectoryDescriptor{}
 	descriptor.Init(id)
 	descriptor.Data["."] = descriptor
-	if (prevDir == "/") {
+	if prevDir == "/" {
 		descriptor.Data[".."] = fs.RootDir
 	}
 	fs.RootDir.Data[dir] = descriptor
 	fmt.Println("Create directory:", dir, "| Descriptor id:", descriptor.Id)
 }
 
-func (fs *FileSystem) Find(fileName string) bool {
-	return fs.RootDir.Data[fileName] != nil
+func (fs *FileSystem) Find(directory *DirectoryDescriptor, fileName string) bool {
+	return directory.Data[fileName] != nil
 }
 
-func (fs *FileSystem) GetDescriptor(fileName string) *fileDescriptor {
-	return fs.RootDir.Data[fileName].(*fileDescriptor)
+func (fs *FileSystem) GetDescriptor(directory *DirectoryDescriptor, fileName string) *FileDescriptor {
+	return directory.Data[fileName].(*FileDescriptor)
 }
 
-func (fs *FileSystem) NullifyDescriptor(fileName string) {
-	fs.RootDir.Data[fileName] = nil
+func (fs *FileSystem) NullifyDescriptor(directory *DirectoryDescriptor, fileName string) {
+	directory.Data[fileName] = nil
 }

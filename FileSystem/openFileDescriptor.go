@@ -1,7 +1,7 @@
 package filesystem
 
 type OpenFileDescriptor struct {
-	Id int
-	Desc *fileDescriptor
+	Id     int
+	Desc   *FileDescriptor
 	Offset int
 }

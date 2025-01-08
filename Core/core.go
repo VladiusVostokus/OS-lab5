@@ -10,7 +10,7 @@ type Core struct {
 	fs *fs.FileSystem
 	openFileDescriptors []*fs.OpenFileDescriptor
 	blockSize int
-	Cwd **fs.DirectoryDescriptor
+	Cwd *fs.DirectoryDescriptor
 }
 
 func (c *Core) Mkfs (descriptorsCount int) {
@@ -20,12 +20,12 @@ func (c *Core) Mkfs (descriptorsCount int) {
 	fmt.Println("Create core with", descriptorsCount, "possible open file descpriptors")
 	c.fs = &fs.FileSystem{}
 	c.fs.Mkfs()
-	c.Cwd = &c.fs.RootDir
+	c.Cwd = c.fs.RootDir
 	fmt.Println("System is ready to work!")
 }
 
 func (c *Core) Create(fileName string) {
-	if (c.fs.Find(fileName)) {
+	if (c.fs.Find(c.Cwd, fileName)) {
 		fmt.Println("Error: File",fileName,"exist already")
 		return
 	}
@@ -37,7 +37,7 @@ func (c *Core) Ls() {
 }
 
 func (c *Core) Stat(fileName string) {
-	if (c.fs.Find(fileName)) {
+	if (c.fs.Find(c.Cwd, fileName)) {
 		c.fs.Stat(fileName)
 		return
 	}
@@ -45,11 +45,11 @@ func (c *Core) Stat(fileName string) {
 }
 
 func (c *Core) Link(linkWith, toLink string) {
-	if (c.fs.Find(toLink)) {
+	if (c.fs.Find(c.Cwd, toLink)) {
 		fmt.Println("Error: File",toLink,"to create link exist already")
 		return
 	}
-	if (!c.fs.Find(linkWith)) {
+	if (!c.fs.Find(c.Cwd,linkWith)) {
 		fmt.Println("Error: File ",toLink,"to create link with does not exist")
 		return
 	}
@@ -57,19 +57,19 @@ func (c *Core) Link(linkWith, toLink string) {
 }
 
 func (c *Core) Unlink(fileName string) {
-	if (!c.fs.Find(fileName)) {
+	if (!c.fs.Find(c.Cwd, fileName)) {
 		fmt.Println("Error: File",fileName,"to delete does not exist")
 		return
 	}
-	descriptor := c.fs.GetDescriptor(fileName)
+	descriptor := c.fs.GetDescriptor(c.Cwd, fileName)
 	c.fs.Unlink(fileName)
 	if (descriptor.Nlink == 0 && descriptor.NOpen == 0) {
-		c.fs.NullifyDescriptor(fileName)
+		c.fs.NullifyDescriptor(c.Cwd,fileName)
 	}
 }
 
 func (c *Core) Open(fileName string) *fs.OpenFileDescriptor{
-	if (!c.fs.Find(fileName)) {
+	if (!c.fs.Find(c.Cwd, fileName)) {
 		fmt.Println("Error: File",fileName,"to open does not exist")
 		return nil
 	}
@@ -79,7 +79,7 @@ func (c *Core) Open(fileName string) *fs.OpenFileDescriptor{
 		return nil
 	}
 	fmt.Println("Open file", fileName)
-	descriptor := c.fs.GetDescriptor(fileName)
+	descriptor := c.fs.GetDescriptor(c.Cwd, fileName)
 	descriptor.NOpen++
 	openFileDescriptor := &fs.OpenFileDescriptor{Desc: descriptor, Offset: 0, Id: index}
 	c.openFileDescriptors[index] = openFileDescriptor
@@ -118,11 +118,11 @@ func (c *Core) Truncate(fileName string, size int) {
 		fmt.Println("Error: Incorrect size to truncate, must be bigger than 0")
 		return
 	}
-	if (!c.fs.Find(fileName)) {
+	if (!c.fs.Find(c.Cwd, fileName)) {
 		fmt.Println("Error: File",fileName,"to truncate does not exist")
 		return
 	}
-	descriptor := c.fs.GetDescriptor(fileName)
+	descriptor := c.fs.GetDescriptor(c.Cwd, fileName)
 	if (descriptor.Size > size) {
 		newBlockCount := size / c.blockSize
 		remainingBytes := size % c.blockSize
