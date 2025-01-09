@@ -116,6 +116,11 @@ func main() {
 	core.Ls("/a/././b/../b")
 	core.Mkdir("c")
 	core.Create("c/f.txt")
+	core.Truncate("c/f.txt", 10)
+	fd3 := core.Open("c/f.txt")
+	aaa2 := []byte("aaa2")
+	core.Write(fd3, aaa2)
+	core.Read(fd3, 4)
 	core.Unlink("c/f.txt")
 	core.Ls("c")
 }

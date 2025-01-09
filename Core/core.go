@@ -88,9 +88,14 @@ func (c *Core) Unlink(filePath string) {
 	}
 }
 
-func (c *Core) Open(fileName string) *fs.OpenFileDescriptor{
-	if (!c.fs.Find(c.Cwd, fileName)) {
-		fmt.Println("Error: File",fileName,"to open does not exist")
+func (c *Core) Open(filePath string) *fs.OpenFileDescriptor{
+	prevDir, desc, fileName := c.lookup(filePath)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", filePath)
+		return nil
+	}
+	if (desc == nil) {
+		fmt.Println("Error: File", filePath, "does not exist")
 		return nil
 	}
 	index := c.findFreeIndex()
@@ -98,10 +103,11 @@ func (c *Core) Open(fileName string) *fs.OpenFileDescriptor{
 		fmt.Println("No free descriptor indexes")
 		return nil
 	}
+
 	fmt.Println("Open file", fileName)
-	descriptor := c.fs.GetDescriptor(c.Cwd, fileName).(*fs.FileDescriptor)
-	descriptor.NOpen++
-	openFileDescriptor := &fs.OpenFileDescriptor{Desc: descriptor, Offset: 0, Id: index}
+	fileDesc := desc.(*fs.FileDescriptor)
+	fileDesc.NOpen++
+	openFileDescriptor := &fs.OpenFileDescriptor{Desc: fileDesc, Offset: 0, Id: index}
 	c.openFileDescriptors[index] = openFileDescriptor
 	openFileDescriptor.Desc.Data = make(map[int]*fs.Block)
 	return openFileDescriptor
@@ -133,31 +139,36 @@ func (c *Core) Close(fd *fs.OpenFileDescriptor) *fs.OpenFileDescriptor {
 	return nil
 }
 
-func (c *Core) Truncate(fileName string, size int) {
+func (c *Core) Truncate(filePath string, size int) {
 	if (size <= 0) {
 		fmt.Println("Error: Incorrect size to truncate, must be bigger than 0")
 		return
 	}
-	if (!c.fs.Find(c.Cwd, fileName)) {
-		fmt.Println("Error: File",fileName,"to truncate does not exist")
+	prevDir, desc, _ := c.lookup(filePath)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
-	descriptor := c.fs.GetDescriptor(c.Cwd, fileName).(*fs.FileDescriptor)
-	if (descriptor.Size > size) {
+	if (desc == nil) {
+		fmt.Println("Error: File", filePath, "does not exist")
+		return 
+	}
+	fileDesc := desc.(*fs.FileDescriptor)
+	if (fileDesc.Size > size) {
 		newBlockCount := size / c.blockSize
 		remainingBytes := size % c.blockSize
 		if (remainingBytes > 0) {
 			newBlockCount++
 		}
-		for i := newBlockCount; descriptor.Nblock > newBlockCount; i++ {
-			if (descriptor.Data[i] == nil) {
+		for i := newBlockCount; fileDesc.Nblock > newBlockCount; i++ {
+			if (fileDesc.Data[i] == nil) {
 				continue
 			}
-			delete(descriptor.Data, i)
-			descriptor.Nblock--
+			delete(fileDesc.Data, i)
+			fileDesc.Nblock--
 		}
 	}
-	descriptor.Size = size
+	fileDesc.Size = size
 }
 
 func (c *Core) Read(fd *fs.OpenFileDescriptor, size int) {
