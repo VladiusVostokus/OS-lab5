@@ -28,7 +28,6 @@ func (fs *FileSystem) Create(dir *DirectoryDescriptor, fileName string) {
 }
 
 func (fs *FileSystem) Ls(dir *DirectoryDescriptor) {
-	fmt.Println("Hard links of currect directory:")
 	for f, d := range dir.Data {
 		switch desc := d.(type) {
 		case *FileDescriptor:
@@ -41,7 +40,7 @@ func (fs *FileSystem) Ls(dir *DirectoryDescriptor) {
 	}
 }
 
-func (fs *FileSystem) Stat(desc Descriptor, filePath string) {
+func (fs *FileSystem) Stat(desc Descriptor) {
 	switch descriptor := desc.(type) {
 	case *FileDescriptor:
 		fmt.Println("Type:", descriptor.FileType,
@@ -67,14 +66,12 @@ func (fs *FileSystem) Stat(desc Descriptor, filePath string) {
 func (fs *FileSystem) Link(dir *DirectoryDescriptor, linkWith *FileDescriptor, toLink string) {
 	linkWith.Nlink++
 	dir.Data[toLink] = linkWith
-	fmt.Println("Create hard link", toLink)
 }
 
 func (fs *FileSystem) Unlink(dir *DirectoryDescriptor, fileName string) {
 	descriptor := dir.Data[fileName].(*FileDescriptor)
 	descriptor.Nlink--
 	delete(dir.Data, fileName)
-	fmt.Println("Delete file:", fileName)
 }
 
 func (fs *FileSystem) Symlink(linkname, content string) {
@@ -83,7 +80,6 @@ func (fs *FileSystem) Symlink(linkname, content string) {
 	descriptor.Init(id)
 	descriptor.Data = content
 	fs.RootDir.Data[linkname] = descriptor
-	fmt.Println("Create symlink:", linkname, " to file", content, "| Descriptor id:", descriptor.Id)
 }
 
 func (fs *FileSystem) Mkdir(prevDir *DirectoryDescriptor, dirName string) {
@@ -97,7 +93,6 @@ func (fs *FileSystem) Mkdir(prevDir *DirectoryDescriptor, dirName string) {
 		descriptor.Data[".."] = prevDir
 	}
 	prevDir.Data[dirName] = descriptor
- 	fmt.Println("Create directory:", dirName, "| Descriptor id:", descriptor.Id)
 }
 
 func (fs *FileSystem) Rmdir(dir *DirectoryDescriptor, dirName string) {
@@ -105,7 +100,6 @@ func (fs *FileSystem) Rmdir(dir *DirectoryDescriptor, dirName string) {
 	delete(dirToDel.Data, ".")
 	delete(dirToDel.Data, "..")
 	delete(dir.Data, dirName)
-	fmt.Println("Delete directory", dirName)
 }
 
 func (fs *FileSystem) Find(directory *DirectoryDescriptor, fileName string) bool {

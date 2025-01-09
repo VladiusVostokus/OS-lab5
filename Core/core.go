@@ -41,12 +41,12 @@ func (c *Core) Ls(path ...string) {
 	if path == nil {
 		c.fs.Ls(c.Cwd)
 	} else {
-		_, dir, dirName := c.lookup(path[0])
+		_, dir, _ := c.lookup(path[0])
 		if (dir == nil) {
 			fmt.Println("Error: Directory", path[0], "does not exist")
 			return
 		}
-		fmt.Println("List for", dirName, "directory")
+		fmt.Println("List of hard links", path[0], "directory")
 		c.fs.Ls(dir.(*fs.DirectoryDescriptor))
 	}
 }
@@ -61,11 +61,12 @@ func (c *Core) Stat(filePath string) {
 		fmt.Println("Error: File", filePath, "does not exist")
 		return
 	}
-	c.fs.Stat(desc, filePath)
+	fmt.Println("Print stat for file:", filePath)
+	c.fs.Stat(desc)
 }
 
 func (c *Core) Link(linkWithPath, toLinkPath string) {
-	prevDirLinkWith, descLinkWith, _ := c.lookup(linkWithPath)
+	prevDirLinkWith, descLinkWith, fileLinkWith := c.lookup(linkWithPath)
 	if (prevDirLinkWith == nil) {
 		fmt.Println("Error: incorrect path", linkWithPath)
 		return
@@ -86,6 +87,7 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 	}
 	desc := descLinkWith.(*fs.FileDescriptor)
 	c.fs.Link(prevDirToLink, desc, fileToLink)
+	fmt.Println("Create hard link", fileToLink, "with", fileLinkWith)
 }
 
 func (c *Core) Unlink(filePath string) {
@@ -105,13 +107,14 @@ func (c *Core) Unlink(filePath string) {
 	}
 	fileDesc := desc.(*fs.FileDescriptor)
 	c.fs.Unlink(prevDir, fileName)
+	fmt.Println("Delete file:", filePath)
 	if (fileDesc.Nlink == 0 && fileDesc.NOpen == 0) {
 		c.fs.NullifyDescriptor(prevDir, fileName)
 	}
 }
 
 func (c *Core) Open(filePath string) *fs.OpenFileDescriptor{
-	prevDir, desc, fileName := c.lookup(filePath)
+	prevDir, desc, _ := c.lookup(filePath)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return nil
@@ -126,7 +129,7 @@ func (c *Core) Open(filePath string) *fs.OpenFileDescriptor{
 		return nil
 	}
 
-	fmt.Println("Open file", fileName)
+	fmt.Println("Open file", filePath)
 	fileDesc := desc.(*fs.FileDescriptor)
 	fileDesc.NOpen++
 	openFileDescriptor := &fs.OpenFileDescriptor{Desc: fileDesc, Offset: 0, Id: index}
@@ -280,6 +283,7 @@ func (c *Core) Symlink(linkname, content string) {
 		return
 	}
 	c.fs.Symlink(linkname, content)
+	fmt.Println("Create symlink:", linkname, " to file", content)
 }
 
 func (c *Core) Mkdir(path string) {
@@ -293,6 +297,7 @@ func (c *Core) Mkdir(path string) {
 		return
 	}
 	c.fs.Mkdir(prevDir, dirName)
+	fmt.Println("Create directory:", path)
 }
 
 func (c *Core) Rmdir(path string) {
@@ -315,6 +320,7 @@ func (c *Core) Rmdir(path string) {
 		return
 	}
 	c.fs.Rmdir(prevDir, dirName)
+	fmt.Println("Delete directory", path)
 }
 
 func (c *Core) Cd(path string) {
