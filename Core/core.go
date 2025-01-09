@@ -231,23 +231,45 @@ func (c *Core) Symlink(linkname, content string) {
 
 func (c *Core) Mkdir(path string) {
 	prevDir, dir, dirName := c.lookup(path)
-	c.fs.Mkdir(prevDir, dir, dirName)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", path)
+		return
+	}
+	if (dir != nil) {
+		fmt.Println("Error: Directory", path, "already exist")
+		return
+	}
+	c.fs.Mkdir(prevDir, dirName)
 }
 
 func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDescriptor, string) {
-	var prevDir *fs.DirectoryDescriptor
+	var prevDir **fs.DirectoryDescriptor
 	var dir *fs.DirectoryDescriptor
+	curDir := c.Cwd
 	if (pathname[0] == '/') {
-		prevDir = c.fs.RootDir
-		dir = c.fs.RootDir
-	} else {
-		prevDir = c.Cwd
+		prevDir = &c.fs.RootDir
+		curDir = c.fs.RootDir
 	}
 	pathComponents := strings.Split(pathname, "/")
 	pathComponents = pathComponents[1:]
 	countOfComponents := len(pathComponents)
-	lastComponentIdx := 0
-	lastComponentIdx = countOfComponents - 1
+	lastComponentIdx := countOfComponents - 1
 	dirName := pathComponents[lastComponentIdx]
-	return prevDir, dir, dirName
+	for i, v := range(pathComponents) {
+		if (c.fs.Find(curDir, v)) {
+			dir = c.fs.GetDescriptor(curDir, v).(*fs.DirectoryDescriptor)
+			if (i != lastComponentIdx) {
+				prevDir = &curDir
+				curDir = dir
+			} else {
+				return *prevDir, dir, dirName
+			}
+		} else {
+			if (i != lastComponentIdx) {
+				return nil, nil, ""
+			}
+			return *prevDir, nil, dirName
+		}
+	}
+	return nil, nil, ""
 }
