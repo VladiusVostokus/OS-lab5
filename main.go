@@ -114,4 +114,5 @@ func main() {
 	core.Rmdir("/a/b/c")
 	core.Ls("/a/b/c")
 	core.Ls("/a/././b/../b")
+	core.Mkdir("c")
 }

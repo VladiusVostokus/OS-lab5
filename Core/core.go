@@ -291,12 +291,14 @@ func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDe
 	var prevDir **fs.DirectoryDescriptor
 	var dir *fs.DirectoryDescriptor
 	curDir := c.Cwd
+	pathComponents := strings.Split(pathname, "/")
 	if (pathname[0] == '/') {
 		prevDir = &c.fs.RootDir
 		curDir = c.fs.RootDir
+		pathComponents = pathComponents[1:]
+	} else {
+		prevDir = &c.Cwd
 	}
-	pathComponents := strings.Split(pathname, "/")
-	pathComponents = pathComponents[1:]
 	countOfComponents := len(pathComponents)
 	lastComponentIdx := countOfComponents - 1
 	dirName := pathComponents[lastComponentIdx]
@@ -312,7 +314,7 @@ func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDe
 		} else {
 			if (i != lastComponentIdx) {
 				return nil, nil, ""
-			}
+			} 
 			return *prevDir, nil, dirName
 		}
 	}
