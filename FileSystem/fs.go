@@ -101,6 +101,14 @@ func (fs *FileSystem) Mkdir(prevDir *DirectoryDescriptor, dirName string) {
  	fmt.Println("Create directory:", dirName, "| Descriptor id:", descriptor.Id)
 }
 
+func (fs *FileSystem) Rmdir(dir *DirectoryDescriptor, dirName string) {
+	dirToDel := dir.Data[dirName].(*DirectoryDescriptor)
+	delete(dirToDel.Data, ".")
+	delete(dirToDel.Data, "..")
+	delete(dir.Data, dirName)
+	fmt.Println("Delete directory", dirName)
+}
+
 func (fs *FileSystem) Find(directory *DirectoryDescriptor, fileName string) bool {
 	return directory.Data[fileName] != nil
 }

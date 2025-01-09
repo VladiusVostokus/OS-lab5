@@ -38,7 +38,7 @@ func (c *Core) Ls(path ...string) {
 	} else {
 		_, dir, dirName := c.lookup(path[0])
 		if (dir == nil) {
-			fmt.Println("Error: Directory", path, "does not exist")
+			fmt.Println("Error: Directory", path[0], "does not exist")
 			return
 		}
 		fmt.Println("List for", dirName, "directory")
@@ -250,6 +250,27 @@ func (c *Core) Mkdir(path string) {
 		return
 	}
 	c.fs.Mkdir(prevDir, dirName)
+}
+
+func (c *Core) Rmdir(path string) {
+	if (path == "/") {
+		fmt.Println("Cannot delete root directory, don't play with rm -rf /")
+		return
+	}
+	prevDir, dir, dirName := c.lookup(path)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", path)
+		return
+	}
+	if (dir == nil) {
+		fmt.Println("Error: Directory to delete", path, "does not exist")
+		return
+	}
+	if (len(dir.Data) > 2) {
+		fmt.Println("Error: Directory to delete", path,"is not empty")
+		return
+	}
+	c.fs.Rmdir(prevDir, dirName)
 }
 
 func (c *Core) Cd(path string) {
