@@ -113,4 +113,5 @@ func main() {
 	core.Ls("/a/b/c")
 	core.Rmdir("/a/b/c")
 	core.Ls("/a/b/c")
+	core.Ls("/a/././b/../b")
 }
