@@ -74,12 +74,12 @@ func (fs *FileSystem) Unlink(dir *DirectoryDescriptor, fileName string) {
 	delete(dir.Data, fileName)
 }
 
-func (fs *FileSystem) Symlink(linkname, content string) {
+func (fs *FileSystem) Symlink(dir *DirectoryDescriptor, linkname, content string) {
 	id := int(time.Now().UnixNano())
 	descriptor := &symlinkDescriptor{}
 	descriptor.Init(id)
 	descriptor.Data = content
-	fs.RootDir.Data[linkname] = descriptor
+	dir.Data[linkname] = descriptor
 }
 
 func (fs *FileSystem) Mkdir(prevDir *DirectoryDescriptor, dirName string) {

@@ -277,13 +277,22 @@ func (c *Core) Seek(fd *fs.OpenFileDescriptor, offset int) {
 	fd.Offset = offset
 }
 
-func (c *Core) Symlink(linkname, content string) {
+func (c *Core) Symlink(linkPath, content string) {
 	if (len(content) > 32) {
 		fmt.Println("Error: symlink content can not be bigger than block size", c.blockSize)
 		return
 	}
-	c.fs.Symlink(linkname, content)
-	fmt.Println("Create symlink:", linkname, " to file", content)
+	prevDir, linkDesc, linkName := c.lookup(linkPath)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", linkPath)
+		return
+	}
+	if (linkDesc != nil) {
+		fmt.Println("Error: Directory", linkPath, "already exist")
+		return
+	}
+	c.fs.Symlink(prevDir, linkName, content)
+	fmt.Println("Create symlink:", linkPath, " to file", content)
 }
 
 func (c *Core) Mkdir(path string) {

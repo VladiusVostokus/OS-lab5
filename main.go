@@ -127,4 +127,5 @@ func main() {
 	core.Unlink("/a/.")
 	core.Unlink("/a/..")
 	core.Stat("/a")
+	core.Symlink("/a/symlink.txt","somefile.txt")
 }
