@@ -64,11 +64,10 @@ func (fs *FileSystem) Stat(fileName string) {
 	}
 }
 
-func (fs *FileSystem) Link(linkWith, toLink string) {
-	descriptor := fs.RootDir.Data[linkWith].(*FileDescriptor)
-	descriptor.Nlink++
-	fs.RootDir.Data[toLink] = descriptor
-	fmt.Println("Create hard link", toLink, "with", linkWith)
+func (fs *FileSystem) Link(dir *DirectoryDescriptor, linkWith *FileDescriptor, toLink string) {
+	linkWith.Nlink++
+	dir.Data[toLink] = linkWith
+	fmt.Println("Create hard link", toLink)
 }
 
 func (fs *FileSystem) Unlink(dir *DirectoryDescriptor, fileName string) {

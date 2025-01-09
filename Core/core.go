@@ -59,16 +59,28 @@ func (c *Core) Stat(fileName string) {
 	fmt.Println("Error: File",fileName,"does not exist")
 }
 
-func (c *Core) Link(linkWith, toLink string) {
-	if (c.fs.Find(c.Cwd, toLink)) {
-		fmt.Println("Error: File",toLink,"to create link exist already")
+func (c *Core) Link(linkWithPath, toLinkPath string) {
+	prevDirLinkWith, descLinkWith, _ := c.lookup(linkWithPath)
+	if (prevDirLinkWith == nil) {
+		fmt.Println("Error: incorrect path", linkWithPath)
 		return
 	}
-	if (!c.fs.Find(c.Cwd,linkWith)) {
-		fmt.Println("Error: File ",toLink,"to create link with does not exist")
+	if (descLinkWith == nil) {
+		fmt.Println("Error: File", linkWithPath, "link with does not exist exist")
 		return
 	}
-	c.fs.Link(linkWith, toLink)
+
+	prevDirToLink, descToLink, fileToLink := c.lookup(toLinkPath)
+	if (prevDirToLink == nil) {
+		fmt.Println("Error: incorrect path", toLinkPath)
+		return
+	}
+	if (descToLink != nil) {
+		fmt.Println("Error: File", toLinkPath, "to to link already exist")
+		return
+	}
+	desc := descLinkWith.(*fs.FileDescriptor)
+	c.fs.Link(prevDirToLink, desc, fileToLink)
 }
 
 func (c *Core) Unlink(filePath string) {

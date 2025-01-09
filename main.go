@@ -90,13 +90,12 @@ func main() {
 	core.Read(fdd, 23)
 	fdd = core.Close(fdd)
 
-	
 	core.Seek(fdd2, 3)
 	aaa := []byte("aaa")
 	core.Write(fdd2, aaa)
 	core.Read(fdd2, 20)
 	fdd2 = core.Close(fdd2)
-	//core.Read(fdd2, 23) Should give and error
+
 	fmt.Println("\n==============================Test symlinks================================")
 	core.Symlink("symlink0.txt","contentBiggerThanBlockSize.txt")
 	core.Symlink("symlink.txt","somefile.txt")
@@ -121,6 +120,7 @@ func main() {
 	aaa2 := []byte("aaa2")
 	core.Write(fd3, aaa2)
 	core.Read(fd3, 4)
+	core.Link("c/f.txt","c/f2.txt")
 	core.Unlink("c/f.txt")
 	core.Ls("c")
 }
