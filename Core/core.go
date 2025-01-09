@@ -242,6 +242,20 @@ func (c *Core) Mkdir(path string) {
 	c.fs.Mkdir(prevDir, dirName)
 }
 
+func (c *Core) Cd(path string) {
+	prevDir, dir, dirName := c.lookup(path)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", path)
+		return
+	}
+	if (dir == nil) {
+		fmt.Println("Error: Directory to change to current", path, "does not exist")
+		return
+	}
+	c.Cwd = dir
+	fmt.Println("Change current working directory to", dirName)
+}
+
 func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDescriptor, string) {
 	var prevDir **fs.DirectoryDescriptor
 	var dir *fs.DirectoryDescriptor
