@@ -32,8 +32,18 @@ func (c *Core) Create(fileName string) {
 	c.fs.Create(fileName)
 }
 
-func (c *Core) Ls() {
-	c.fs.Ls()
+func (c *Core) Ls(path ...string) {
+	if path == nil {
+		c.fs.Ls(c.Cwd)
+	} else {
+		_, dir, dirName := c.lookup(path[0])
+		if (dir == nil) {
+			fmt.Println("Error: Directory", path, "does not exist")
+			return
+		}
+		fmt.Println("List for", dirName, "directory")
+		c.fs.Ls(dir)
+	}
 }
 
 func (c *Core) Stat(fileName string) {

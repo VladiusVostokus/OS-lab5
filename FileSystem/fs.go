@@ -27,9 +27,9 @@ func (fs *FileSystem) Create(fileName string) {
 	fmt.Println("Create file:", fileName, "| Descriptor id:", descriptor.Id)
 }
 
-func (fs *FileSystem) Ls() {
+func (fs *FileSystem) Ls(dir *DirectoryDescriptor) {
 	fmt.Println("Hard links of currect directory:")
-	for f, d := range fs.RootDir.Data {
+	for f, d := range dir.Data {
 		switch desc := d.(type) {
 		case *FileDescriptor:
 			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)

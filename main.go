@@ -110,4 +110,5 @@ func main() {
 	core.Mkdir("/a/b/c/d/e")
 	core.Ls()
 	core.Cd("/a/b")
+	core.Ls("/a/b/c")
 }
