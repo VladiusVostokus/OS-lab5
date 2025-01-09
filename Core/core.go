@@ -85,6 +85,11 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 
 func (c *Core) Unlink(filePath string) {
 	prevDir, desc, fileName := c.lookup(filePath)
+	_, isDir := desc.(*fs.DirectoryDescriptor)
+	if (isDir) {
+		fmt.Println("Error: can not unlink hard link to directory", filePath)
+		return
+	}
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return

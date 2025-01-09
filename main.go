@@ -123,4 +123,7 @@ func main() {
 	core.Link("c/f.txt","c/f2.txt")
 	core.Unlink("c/f.txt")
 	core.Ls("c")
+	core.Unlink("/a")
+	core.Unlink("/a/.")
+	core.Unlink("/a/..")
 }
