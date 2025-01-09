@@ -41,8 +41,8 @@ func (fs *FileSystem) Ls(dir *DirectoryDescriptor) {
 	}
 }
 
-func (fs *FileSystem) Stat(fileName string) {
-	switch descriptor := fs.RootDir.Data[fileName].(type) {
+func (fs *FileSystem) Stat(desc Descriptor, filePath string) {
+	switch descriptor := desc.(type) {
 	case *FileDescriptor:
 		fmt.Println("Type:", descriptor.FileType,
 			"\tId:", descriptor.Id,

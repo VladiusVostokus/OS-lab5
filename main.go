@@ -126,4 +126,5 @@ func main() {
 	core.Unlink("/a")
 	core.Unlink("/a/.")
 	core.Unlink("/a/..")
+	core.Stat("/a")
 }

@@ -51,12 +51,17 @@ func (c *Core) Ls(path ...string) {
 	}
 }
 
-func (c *Core) Stat(fileName string) {
-	if (c.fs.Find(c.Cwd, fileName)) {
-		c.fs.Stat(fileName)
+func (c *Core) Stat(filePath string) {
+	prevDir, desc, _ := c.lookup(filePath)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
-	fmt.Println("Error: File",fileName,"does not exist")
+	if (desc == nil) {
+		fmt.Println("Error: File", filePath, "does not exist")
+		return
+	}
+	c.fs.Stat(desc, filePath)
 }
 
 func (c *Core) Link(linkWithPath, toLinkPath string) {
