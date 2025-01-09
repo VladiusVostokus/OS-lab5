@@ -24,12 +24,17 @@ func (c *Core) Mkfs (descriptorsCount int) {
 	fmt.Println("System is ready to work!")
 }
 
-func (c *Core) Create(fileName string) {
-	if (c.fs.Find(c.Cwd, fileName)) {
-		fmt.Println("Error: File",fileName,"exist already")
+func (c *Core) Create(filePath string) {
+	prevDir, desc, fileName := c.lookup(filePath)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
-	c.fs.Create(fileName)
+	if (desc != nil) {
+		fmt.Println("Error: File", filePath, "already exist")
+		return
+	}
+	c.fs.Create(prevDir, fileName)
 }
 
 func (c *Core) Ls(path ...string) {
@@ -42,7 +47,7 @@ func (c *Core) Ls(path ...string) {
 			return
 		}
 		fmt.Println("List for", dirName, "directory")
-		c.fs.Ls(dir)
+		c.fs.Ls(dir.(*fs.DirectoryDescriptor))
 	}
 }
 
@@ -66,15 +71,20 @@ func (c *Core) Link(linkWith, toLink string) {
 	c.fs.Link(linkWith, toLink)
 }
 
-func (c *Core) Unlink(fileName string) {
-	if (!c.fs.Find(c.Cwd, fileName)) {
-		fmt.Println("Error: File",fileName,"to delete does not exist")
+func (c *Core) Unlink(filePath string) {
+	prevDir, desc, fileName := c.lookup(filePath)
+	if (prevDir == nil) {
+		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
-	descriptor := c.fs.GetDescriptor(c.Cwd, fileName).(*fs.FileDescriptor)
-	c.fs.Unlink(fileName)
-	if (descriptor.Nlink == 0 && descriptor.NOpen == 0) {
-		c.fs.NullifyDescriptor(c.Cwd,fileName)
+	if (desc == nil) {
+		fmt.Println("Error: File", filePath, "to delete does not exist exist")
+		return
+	}
+	fileDesc := desc.(*fs.FileDescriptor)
+	c.fs.Unlink(prevDir, fileName)
+	if (fileDesc.Nlink == 0 && fileDesc.NOpen == 0) {
+		c.fs.NullifyDescriptor(prevDir, fileName)
 	}
 }
 
@@ -266,7 +276,8 @@ func (c *Core) Rmdir(path string) {
 		fmt.Println("Error: Directory to delete", path, "does not exist")
 		return
 	}
-	if (len(dir.Data) > 2) {
+	dirContent := dir.(*fs.DirectoryDescriptor).Data
+	if (len(dirContent) > 2) {
 		fmt.Println("Error: Directory to delete", path,"is not empty")
 		return
 	}
@@ -283,13 +294,13 @@ func (c *Core) Cd(path string) {
 		fmt.Println("Error: Directory to change to current", path, "does not exist")
 		return
 	}
-	c.Cwd = dir
+	c.Cwd = dir.(*fs.DirectoryDescriptor)
 	fmt.Println("Change current working directory to", dirName)
 }
 
-func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDescriptor, string) {
+func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, fs.Descriptor, string) {
 	var prevDir **fs.DirectoryDescriptor
-	var dir *fs.DirectoryDescriptor
+	var desc fs.Descriptor
 	curDir := c.Cwd
 	pathComponents := strings.Split(pathname, "/")
 	if (pathname[0] == '/') {
@@ -304,12 +315,12 @@ func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, *fs.DirectoryDe
 	dirName := pathComponents[lastComponentIdx]
 	for i, v := range(pathComponents) {
 		if (c.fs.Find(curDir, v)) {
-			dir = c.fs.GetDescriptor(curDir, v).(*fs.DirectoryDescriptor)
+			desc = c.fs.GetDescriptor(curDir, v)
 			if (i != lastComponentIdx) {
 				prevDir = &curDir
-				curDir = dir
+				curDir = desc.(*fs.DirectoryDescriptor)
 			} else {
-				return *prevDir, dir, dirName
+				return *prevDir, desc, dirName
 			}
 		} else {
 			if (i != lastComponentIdx) {

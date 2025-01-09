@@ -115,4 +115,7 @@ func main() {
 	core.Ls("/a/b/c")
 	core.Ls("/a/././b/../b")
 	core.Mkdir("c")
+	core.Create("c/f.txt")
+	core.Unlink("c/f.txt")
+	core.Ls("c")
 }

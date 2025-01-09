@@ -18,12 +18,12 @@ func (fs *FileSystem) Mkfs() {
 	fmt.Println("File system created")
 }
 
-func (fs *FileSystem) Create(fileName string) {
+func (fs *FileSystem) Create(dir *DirectoryDescriptor, fileName string) {
 	id := int(time.Now().UnixNano())
 	descriptor := &FileDescriptor{}
 	descriptor.Init(id)
 
-	fs.RootDir.Data[fileName] = descriptor
+	dir.Data[fileName] = descriptor
 	fmt.Println("Create file:", fileName, "| Descriptor id:", descriptor.Id)
 }
 
@@ -71,11 +71,11 @@ func (fs *FileSystem) Link(linkWith, toLink string) {
 	fmt.Println("Create hard link", toLink, "with", linkWith)
 }
 
-func (fs *FileSystem) Unlink(fileName string) {
-	fmt.Println("Delete file:", fileName)
-	descriptor := fs.RootDir.Data[fileName].(*FileDescriptor)
+func (fs *FileSystem) Unlink(dir *DirectoryDescriptor, fileName string) {
+	descriptor := dir.Data[fileName].(*FileDescriptor)
 	descriptor.Nlink--
-	delete(fs.RootDir.Data, fileName)
+	delete(dir.Data, fileName)
+	fmt.Println("Delete file:", fileName)
 }
 
 func (fs *FileSystem) Symlink(linkname, content string) {
