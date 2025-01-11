@@ -333,7 +333,7 @@ func (c *Core) Rmdir(path string) {
 }
 
 func (c *Core) Cd(path string) {
-	prevDir, dir, dirName := c.lookup(path)
+	prevDir, dir, _ := c.lookup(path)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
@@ -343,7 +343,7 @@ func (c *Core) Cd(path string) {
 		return
 	}
 	c.Cwd = dir.(*fs.DirectoryDescriptor)
-	fmt.Println("Change current working directory to", dirName)
+	fmt.Println("Change current working directory to", path)
 }
 
 func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, fs.Descriptor, string) {
