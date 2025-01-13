@@ -365,6 +365,11 @@ func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, fs.Descriptor, 
 		component := pathComponents[i]
 		if (c.fs.Find(curDir, component)) {
 			desc = c.fs.GetDescriptor(curDir, component)
+			symLink, isSymLink := desc.(*fs.SymlinkDescriptor)
+			if isSymLink {
+				path := strings.Split(symLink.Data, "/")
+				pathComponents = append(pathComponents[:i+1], append(path, pathComponents[i+1:]...)...)
+			}
 			if (i != lastComponentIdx) {
 				prevDir = &curDir
 				curDir = desc.(*fs.DirectoryDescriptor)

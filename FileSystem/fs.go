@@ -34,7 +34,7 @@ func (fs *FileSystem) Ls(dir *DirectoryDescriptor) {
 			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
 		case *DirectoryDescriptor:
 			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
-		case *symlinkDescriptor:
+		case *SymlinkDescriptor:
 			fmt.Println("Name:", f, "\t id:", desc.Id, "\t type:", desc.FileType)
 		}
 	}
@@ -54,7 +54,7 @@ func (fs *FileSystem) Stat(desc Descriptor) {
 			"\tHard links count:", descriptor.Nlink,
 			"\tSize:", descriptor.Size,
 			"\tBlocks:", descriptor.Nblock)
-	case *symlinkDescriptor:
+	case *SymlinkDescriptor:
 		fmt.Println("Type:", descriptor.FileType,
 			"\tId:", descriptor.Id,
 			"\tHard links count:", descriptor.Nlink,
@@ -76,7 +76,7 @@ func (fs *FileSystem) Unlink(dir *DirectoryDescriptor, fileName string) {
 
 func (fs *FileSystem) Symlink(dir *DirectoryDescriptor, linkname, content string) {
 	id := int(time.Now().UnixNano())
-	descriptor := &symlinkDescriptor{}
+	descriptor := &SymlinkDescriptor{}
 	descriptor.Init(id)
 	descriptor.Data = content
 	dir.Data[linkname] = descriptor

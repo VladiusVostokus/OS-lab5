@@ -18,14 +18,14 @@ func (fd *FileDescriptor) Init(id int) {
 	fd.Data = make(map[int]*Block)
 }
 
-type symlinkDescriptor struct {
+type SymlinkDescriptor struct {
 	FileType               string
 	Nlink, NOpen, Size, Id int
 	Data                   string
 	Nblock                 int
 }
 
-func (fd *symlinkDescriptor) Init(id int) {
+func (fd *SymlinkDescriptor) Init(id int) {
 	fd.FileType = "sym"
 	fd.Id = id
 	fd.Nlink = 1
