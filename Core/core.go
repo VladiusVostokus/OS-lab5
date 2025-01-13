@@ -361,9 +361,10 @@ func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, fs.Descriptor, 
 	countOfComponents := len(pathComponents)
 	lastComponentIdx := countOfComponents - 1
 	dirName := pathComponents[lastComponentIdx]
-	for i, v := range(pathComponents) {
-		if (c.fs.Find(curDir, v)) {
-			desc = c.fs.GetDescriptor(curDir, v)
+	for i := 0; i < len(pathComponents); i++ {
+		component := pathComponents[i]
+		if (c.fs.Find(curDir, component)) {
+			desc = c.fs.GetDescriptor(curDir, component)
 			if (i != lastComponentIdx) {
 				prevDir = &curDir
 				curDir = desc.(*fs.DirectoryDescriptor)
