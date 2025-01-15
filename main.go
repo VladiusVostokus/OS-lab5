@@ -127,5 +127,8 @@ func main() {
 	core.Unlink("/a/.")
 	core.Unlink("/a/..")
 	core.Stat("/a")
-	core.Symlink("/a/symlink.txt","somefile.txt")
+	core.Symlink("/a/symlink.txt","b/c")
+	core.Mkdir("/a/b/c/d")
+	core.Mkdir("/a/b/c/d/e")
+	core.Cd("/a/symlink.txt/d")
 }
