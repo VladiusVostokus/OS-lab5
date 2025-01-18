@@ -127,10 +127,17 @@ func main() {
 	core.Unlink("/a/.")
 	core.Unlink("/a/..")
 	core.Stat("/a")
+
+	fmt.Println("\n======================Test symlinks to dirs and files=======================")
 	core.Symlink("/a/symlink.txt","b/c")
 	core.Mkdir("/a/b/c/d")
 	core.Mkdir("/a/b/c/d/e")
 	core.Cd("/a/symlink.txt/d")
 	core.Symlink("/a/b/c/d/eee","e")
 	core.Cd("/a/symlink.txt/d/eee")
+	core.Create("fileInD.txt")
+	core.Truncate("fileInD.txt",10)
+	core.Symlink("/a/b/fileDSym","c/d/fileInD.txt")
+	fd4 := core.Open("/a/b/fileDSym")
+	core.Write(fd4,[]byte("aaa"))
 }

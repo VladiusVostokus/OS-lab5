@@ -373,7 +373,6 @@ func (c *Core) lookup(pathname string, follow bool) (*fs.DirectoryDescriptor, fs
 				}
 				path := strings.Split(symLink.Data, "/")
 				pathComponents = append(pathComponents[:i], append(path, pathComponents[i+1:]...)...)
-				fmt.Println(pathComponents)
 				countOfComponents = len(pathComponents)
 				lastComponentIdx = countOfComponents - 1
 				dirName = pathComponents[lastComponentIdx]
