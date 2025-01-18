@@ -131,4 +131,6 @@ func main() {
 	core.Mkdir("/a/b/c/d")
 	core.Mkdir("/a/b/c/d/e")
 	core.Cd("/a/symlink.txt/d")
+	core.Symlink("/a/b/c/d/eee","e")
+	core.Cd("/a/symlink.txt/d/eee")
 }

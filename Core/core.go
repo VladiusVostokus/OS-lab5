@@ -25,7 +25,7 @@ func (c *Core) Mkfs (descriptorsCount int) {
 }
 
 func (c *Core) Create(filePath string) {
-	prevDir, desc, fileName := c.lookup(filePath)
+	prevDir, desc, fileName := c.lookup(filePath,false)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
@@ -41,7 +41,7 @@ func (c *Core) Ls(path ...string) {
 	if path == nil {
 		c.fs.Ls(c.Cwd)
 	} else {
-		_, dir, _ := c.lookup(path[0])
+		_, dir, _ := c.lookup(path[0], false)
 		if (dir == nil) {
 			fmt.Println("Error: Directory", path[0], "does not exist")
 			return
@@ -52,7 +52,7 @@ func (c *Core) Ls(path ...string) {
 }
 
 func (c *Core) Stat(filePath string) {
-	prevDir, desc, _ := c.lookup(filePath)
+	prevDir, desc, _ := c.lookup(filePath, false)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
@@ -66,7 +66,7 @@ func (c *Core) Stat(filePath string) {
 }
 
 func (c *Core) Link(linkWithPath, toLinkPath string) {
-	prevDirLinkWith, descLinkWith, fileLinkWith := c.lookup(linkWithPath)
+	prevDirLinkWith, descLinkWith, fileLinkWith := c.lookup(linkWithPath, false)
 	if (prevDirLinkWith == nil) {
 		fmt.Println("Error: incorrect path", linkWithPath)
 		return
@@ -76,7 +76,7 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 		return
 	}
 
-	prevDirToLink, descToLink, fileToLink := c.lookup(toLinkPath)
+	prevDirToLink, descToLink, fileToLink := c.lookup(toLinkPath, false)
 	if (prevDirToLink == nil) {
 		fmt.Println("Error: incorrect path", toLinkPath)
 		return
@@ -91,7 +91,7 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 }
 
 func (c *Core) Unlink(filePath string) {
-	prevDir, desc, fileName := c.lookup(filePath)
+	prevDir, desc, fileName := c.lookup(filePath, false)
 	_, isDir := desc.(*fs.DirectoryDescriptor)
 	if (isDir) {
 		fmt.Println("Error: can not unlink hard link to directory", filePath)
@@ -114,7 +114,7 @@ func (c *Core) Unlink(filePath string) {
 }
 
 func (c *Core) Open(filePath string) *fs.OpenFileDescriptor{
-	prevDir, desc, _ := c.lookup(filePath)
+	prevDir, desc, _ := c.lookup(filePath, true)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return nil
@@ -169,7 +169,7 @@ func (c *Core) Truncate(filePath string, size int) {
 		fmt.Println("Error: Incorrect size to truncate, must be bigger than 0")
 		return
 	}
-	prevDir, desc, _ := c.lookup(filePath)
+	prevDir, desc, _ := c.lookup(filePath, true)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
@@ -282,7 +282,7 @@ func (c *Core) Symlink(linkPath, content string) {
 		fmt.Println("Error: symlink content can not be bigger than block size", c.blockSize)
 		return
 	}
-	prevDir, linkDesc, linkName := c.lookup(linkPath)
+	prevDir, linkDesc, linkName := c.lookup(linkPath, false)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", linkPath)
 		return
@@ -296,7 +296,7 @@ func (c *Core) Symlink(linkPath, content string) {
 }
 
 func (c *Core) Mkdir(path string) {
-	prevDir, dir, dirName := c.lookup(path)
+	prevDir, dir, dirName := c.lookup(path, false)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
@@ -314,7 +314,7 @@ func (c *Core) Rmdir(path string) {
 		fmt.Println("Cannot delete root directory, don't play with rm -rf /")
 		return
 	}
-	prevDir, dir, dirName := c.lookup(path)
+	prevDir, dir, dirName := c.lookup(path, false)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
@@ -333,7 +333,7 @@ func (c *Core) Rmdir(path string) {
 }
 
 func (c *Core) Cd(path string) {
-	prevDir, dir, _ := c.lookup(path)
+	prevDir, dir, _ := c.lookup(path, false)
 	if (prevDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
@@ -346,7 +346,7 @@ func (c *Core) Cd(path string) {
 	fmt.Println("Change current working directory to", path)
 }
 
-func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, fs.Descriptor, string) {
+func (c *Core) lookup(pathname string, follow bool) (*fs.DirectoryDescriptor, fs.Descriptor, string) {
 	var prevDir **fs.DirectoryDescriptor
 	var desc fs.Descriptor
 	curDir := c.Cwd
@@ -367,6 +367,10 @@ func (c *Core) lookup(pathname string) (*fs.DirectoryDescriptor, fs.Descriptor, 
 			desc = c.fs.GetDescriptor(curDir, component)
 			symLink, isSymLink := desc.(*fs.SymlinkDescriptor)
 			if isSymLink {
+				if (i == lastComponentIdx && !follow) {
+					fmt.Println("Error: last component of pathname cannot be symlink")
+					break
+				}
 				path := strings.Split(symLink.Data, "/")
 				pathComponents = append(pathComponents[:i], append(path, pathComponents[i+1:]...)...)
 				fmt.Println(pathComponents)
