@@ -31,7 +31,7 @@ func (c *Core) Create(filePath string) {
 		return
 	}
 	if (desc != nil) {
-		fmt.Println("Error: File", filePath, "already exist")
+		fmt.Println("Error: File", filePath, "to create already exist")
 		return
 	}
 	c.fs.Create(prevDir, fileName)
@@ -58,7 +58,7 @@ func (c *Core) Stat(filePath string) {
 		return
 	}
 	if (desc == nil) {
-		fmt.Println("Error: File", filePath, "does not exist")
+		fmt.Println("Error: File", filePath," to stat does not exist")
 		return
 	}
 	fmt.Println("Print stat for file:", filePath)
@@ -82,7 +82,7 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 		return
 	}
 	if (descToLink != nil) {
-		fmt.Println("Error: File", toLinkPath, "to to link already exist")
+		fmt.Println("Error: File", toLinkPath, "to link already exist")
 		return
 	}
 	desc := descLinkWith.(*fs.FileDescriptor)
@@ -120,7 +120,7 @@ func (c *Core) Open(filePath string) *fs.OpenFileDescriptor{
 		return nil
 	}
 	if (desc == nil) {
-		fmt.Println("Error: File", filePath, "does not exist")
+		fmt.Println("Error: File", filePath, "to open does not exist")
 		return nil
 	}
 	index := c.findFreeIndex()
