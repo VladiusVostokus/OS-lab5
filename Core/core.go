@@ -25,8 +25,8 @@ func (c *Core) Mkfs (descriptorsCount int) {
 }
 
 func (c *Core) Create(filePath string) {
-	prevDir, desc, fileName := c.lookup(filePath,false)
-	if (prevDir == nil) {
+	curDir, desc, fileName := c.lookup(filePath,false)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
@@ -34,7 +34,7 @@ func (c *Core) Create(filePath string) {
 		fmt.Println("Error: File", filePath, "to create already exist")
 		return
 	}
-	c.fs.Create(prevDir, fileName)
+	c.fs.Create(curDir, fileName)
 }
 
 func (c *Core) Ls(path ...string) {
@@ -52,8 +52,8 @@ func (c *Core) Ls(path ...string) {
 }
 
 func (c *Core) Stat(filePath string) {
-	prevDir, desc, _ := c.lookup(filePath, false)
-	if (prevDir == nil) {
+	curDir, desc, _ := c.lookup(filePath, false)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
@@ -66,8 +66,8 @@ func (c *Core) Stat(filePath string) {
 }
 
 func (c *Core) Link(linkWithPath, toLinkPath string) {
-	prevDirLinkWith, descLinkWith, fileLinkWith := c.lookup(linkWithPath, false)
-	if (prevDirLinkWith == nil) {
+	curDirLinkWith, descLinkWith, fileLinkWith := c.lookup(linkWithPath, false)
+	if (curDirLinkWith == nil) {
 		fmt.Println("Error: incorrect path", linkWithPath)
 		return
 	}
@@ -76,8 +76,8 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 		return
 	}
 
-	prevDirToLink, descToLink, fileToLink := c.lookup(toLinkPath, false)
-	if (prevDirToLink == nil) {
+	curDirToLink, descToLink, fileToLink := c.lookup(toLinkPath, false)
+	if (curDirToLink == nil) {
 		fmt.Println("Error: incorrect path", toLinkPath)
 		return
 	}
@@ -86,18 +86,18 @@ func (c *Core) Link(linkWithPath, toLinkPath string) {
 		return
 	}
 	desc := descLinkWith.(*fs.FileDescriptor)
-	c.fs.Link(prevDirToLink, desc, fileToLink)
+	c.fs.Link(curDirToLink, desc, fileToLink)
 	fmt.Println("Create hard link", fileToLink, "with", fileLinkWith)
 }
 
 func (c *Core) Unlink(filePath string) {
-	prevDir, desc, fileName := c.lookup(filePath, false)
+	curDir, desc, fileName := c.lookup(filePath, false)
 	_, isDir := desc.(*fs.DirectoryDescriptor)
 	if (isDir) {
 		fmt.Println("Error: can not unlink hard link to directory", filePath)
 		return
 	}
-	if (prevDir == nil) {
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
@@ -106,16 +106,16 @@ func (c *Core) Unlink(filePath string) {
 		return
 	}
 	fileDesc := desc.(*fs.FileDescriptor)
-	c.fs.Unlink(prevDir, fileName)
+	c.fs.Unlink(curDir, fileName)
 	fmt.Println("Delete file:", filePath)
 	if (fileDesc.Nlink == 0 && fileDesc.NOpen == 0) {
-		c.fs.NullifyDescriptor(prevDir, fileName)
+		c.fs.NullifyDescriptor(curDir, fileName)
 	}
 }
 
 func (c *Core) Open(filePath string) *fs.OpenFileDescriptor{
-	prevDir, desc, _ := c.lookup(filePath, true)
-	if (prevDir == nil) {
+	curDir, desc, _ := c.lookup(filePath, true)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return nil
 	}
@@ -169,8 +169,8 @@ func (c *Core) Truncate(filePath string, size int) {
 		fmt.Println("Error: Incorrect size to truncate, must be bigger than 0")
 		return
 	}
-	prevDir, desc, _ := c.lookup(filePath, true)
-	if (prevDir == nil) {
+	curDir, desc, _ := c.lookup(filePath, true)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", filePath)
 		return
 	}
@@ -282,8 +282,8 @@ func (c *Core) Symlink(linkPath, content string) {
 		fmt.Println("Error: symlink content can not be bigger than block size", c.blockSize)
 		return
 	}
-	prevDir, linkDesc, linkName := c.lookup(linkPath, false)
-	if (prevDir == nil) {
+	curDir, linkDesc, linkName := c.lookup(linkPath, false)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", linkPath)
 		return
 	}
@@ -291,13 +291,13 @@ func (c *Core) Symlink(linkPath, content string) {
 		fmt.Println("Error: Directory", linkPath, "already exist")
 		return
 	}
-	c.fs.Symlink(prevDir, linkName, content)
+	c.fs.Symlink(curDir, linkName, content)
 	fmt.Println("Create symlink:", linkPath, " to file", content)
 }
 
 func (c *Core) Mkdir(path string) {
-	prevDir, dir, dirName := c.lookup(path, false)
-	if (prevDir == nil) {
+	curDir, dir, dirName := c.lookup(path, false)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
 	}
@@ -305,7 +305,7 @@ func (c *Core) Mkdir(path string) {
 		fmt.Println("Error: Directory", path, "already exist")
 		return
 	}
-	c.fs.Mkdir(prevDir, dirName)
+	c.fs.Mkdir(curDir, dirName)
 	fmt.Println("Create directory:", path)
 }
 
@@ -314,8 +314,8 @@ func (c *Core) Rmdir(path string) {
 		fmt.Println("Cannot delete root directory, don't play with rm -rf /")
 		return
 	}
-	prevDir, dir, dirName := c.lookup(path, false)
-	if (prevDir == nil) {
+	curDir, dir, dirName := c.lookup(path, false)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
 	}
@@ -328,13 +328,13 @@ func (c *Core) Rmdir(path string) {
 		fmt.Println("Error: Directory to delete", path,"is not empty")
 		return
 	}
-	c.fs.Rmdir(prevDir, dirName)
+	c.fs.Rmdir(curDir, dirName)
 	fmt.Println("Delete directory", path)
 }
 
 func (c *Core) Cd(path string) {
-	prevDir, dir, _ := c.lookup(path, false)
-	if (prevDir == nil) {
+	curDir, dir, _ := c.lookup(path, false)
+	if (curDir == nil) {
 		fmt.Println("Error: incorrect path", path)
 		return
 	}
