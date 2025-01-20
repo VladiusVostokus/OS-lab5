@@ -347,53 +347,41 @@ func (c *Core) Cd(path string) {
 }
 
 func (c *Core) lookup(pathname string, follow bool) (*fs.DirectoryDescriptor, fs.Descriptor, string) {
-	var prevDir **fs.DirectoryDescriptor
-	var desc fs.Descriptor
 	curDir := c.Cwd
 	pathComponents := strings.Split(pathname, "/")
-	if (pathname[0] == '/') {
-		prevDir = &c.fs.RootDir
+	if pathname[0] == '/' {
 		curDir = c.fs.RootDir
 		pathComponents = pathComponents[1:]
-	} else {
-		prevDir = &c.Cwd
 	}
-	countOfComponents := len(pathComponents)
-	lastComponentIdx := countOfComponents - 1
-	dirName := pathComponents[lastComponentIdx]
+	lastComponentIdx := len(pathComponents) - 1
 	for i := 0; i < len(pathComponents); i++ {
-		component := pathComponents[i]
-		if (c.fs.Find(curDir, component)) {
-			desc = c.fs.GetDescriptor(curDir, component)
-			symLink, isSymLink := desc.(*fs.SymlinkDescriptor)
-			if isSymLink {
-				if (i == lastComponentIdx && !follow) {
-					fmt.Println("Error: last component of pathname cannot be symlink")
-					break
-				}
-				path := strings.Split(symLink.Data, "/")
-				pathComponents = append(pathComponents[:i], append(path, pathComponents[i+1:]...)...)
-				countOfComponents = len(pathComponents)
-				lastComponentIdx = countOfComponents - 1
-				dirName = pathComponents[lastComponentIdx]
-				i--
-				continue
+		componentName := pathComponents[i]
+		if !c.fs.Find(curDir, componentName){
+			if i == lastComponentIdx {
+				return curDir, nil, componentName
 			}
-			if (i != lastComponentIdx) {
-				prevDir = &curDir
-				desc, isDir := desc.(*fs.DirectoryDescriptor)
-				if !isDir {
-					return *prevDir, nil, ""
-				}
-				curDir = desc
+			return nil, nil, ""
+		}
+		desc := c.fs.GetDescriptor(curDir, componentName)
+		if symlink, isSymlink := desc.(*fs.SymlinkDescriptor); isSymlink {
+			if i == lastComponentIdx && !follow {
+				fmt.Println("Error: last component of pathname cannot be symlink")
+				return nil, nil, ""
+			}
+			linkedPath := strings.Split(symlink.Data, "/")
+			pathComponents = append(pathComponents[:i], append(linkedPath, pathComponents[i+1:]...)...)
+			lastComponentIdx = len(pathComponents) - 1
+			i--
+			continue
+		}
+		if i != lastComponentIdx {
+			if nextDir, isDir := desc.(*fs.DirectoryDescriptor); isDir {
+				curDir = nextDir
 			} else {
-				return *prevDir, desc, dirName
+				return curDir, nil, ""
 			}
 		} else {
-			if (i != lastComponentIdx) {
-				return nil, nil, ""
-			} 
-			return *prevDir, nil, dirName
+			return curDir, desc, componentName
 		}
 	}
 	return nil, nil, ""
