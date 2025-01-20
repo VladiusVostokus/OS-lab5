@@ -89,6 +89,7 @@ func main() {
 	core.Write(fdd, str)
 	core.Read(fdd, 23)
 	fdd = core.Close(fdd)
+	fdd = core.Open("unlink.txt")
 
 	core.Seek(fdd2, 3)
 	aaa := []byte("aaa")
