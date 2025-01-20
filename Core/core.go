@@ -381,7 +381,11 @@ func (c *Core) lookup(pathname string, follow bool) (*fs.DirectoryDescriptor, fs
 			}
 			if (i != lastComponentIdx) {
 				prevDir = &curDir
-				curDir = desc.(*fs.DirectoryDescriptor)
+				desc, isDir := desc.(*fs.DirectoryDescriptor)
+				if !isDir {
+					return *prevDir, nil, ""
+				}
+				curDir = desc
 			} else {
 				return *prevDir, desc, dirName
 			}

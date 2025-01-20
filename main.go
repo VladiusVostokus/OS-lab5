@@ -127,6 +127,8 @@ func main() {
 	core.Unlink("/a/.")
 	core.Unlink("/a/..")
 	core.Stat("/a")
+	core.Create("/a/bbb.txt")
+	core.Cd("/a/bbb.txt/c")
 
 	fmt.Println("\n======================Test symlinks to dirs and files=======================")
 	core.Symlink("/a/symlink.txt","b/c")
